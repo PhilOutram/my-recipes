@@ -148,55 +148,48 @@ Please respond ONLY with valid JSON, no markdown backticks or preamble.`
   const foodTypes = [...new Set(recipes.map(r => r.foodType))].sort();
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-2">Recipe Bookmarks</h1>
-        <p className="text-gray-600 mb-6">Save and organize your favorite recipes from around the web</p>
+    <div className="container">
+      <div className="card">
+        <h1>Recipe Bookmarks</h1>
+        <p>Save and organize your favorite recipes from around the web</p>
         
         {debugInfo && (
-          <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded-lg text-sm">
+          <div className="debug-info">
             {debugInfo}
           </div>
         )}
 
-        <form onSubmit={handleAddRecipe} className="mb-6">
-          <div className="flex gap-3">
+        <form onSubmit={handleAddRecipe}>
+          <div className="form-row">
             <input
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="Paste recipe URL here..."
-              className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-orange-400"
               disabled={loading}
               required
             />
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-8 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            >
+            <button type="submit" disabled={loading}>
               {loading ? 'Adding...' : 'Add Recipe'}
             </button>
           </div>
           {error && (
-            <p className="mt-2 text-red-600 text-sm">{error}</p>
+            <p className="error-message">{error}</p>
           )}
         </form>
 
         {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-6 border-t border-gray-200">
+        <div className="filters">
           <input
             type="text"
             placeholder="Search recipes..."
             value={filters.search}
             onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400"
           />
           
           <select
             value={filters.cookTime}
             onChange={(e) => setFilters(prev => ({ ...prev, cookTime: e.target.value }))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400"
           >
             <option value="all">All Cook Times</option>
             <option value="<15 mins">&lt;15 mins</option>
@@ -208,7 +201,6 @@ Please respond ONLY with valid JSON, no markdown backticks or preamble.`
           <select
             value={filters.dishType}
             onChange={(e) => setFilters(prev => ({ ...prev, dishType: e.target.value }))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400"
           >
             <option value="all">All Dish Types</option>
             <option value="starter">Starter</option>
@@ -220,7 +212,6 @@ Please respond ONLY with valid JSON, no markdown backticks or preamble.`
           <select
             value={filters.foodType}
             onChange={(e) => setFilters(prev => ({ ...prev, foodType: e.target.value }))}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-orange-400"
           >
             <option value="all">All Cuisines</option>
             {foodTypes.map(type => (
@@ -232,79 +223,72 @@ Please respond ONLY with valid JSON, no markdown backticks or preamble.`
 
       {/* Recipe Grid */}
       {isInitialLoad ? (
-        <div className="text-center text-gray-500 py-12">Loading your recipes...</div>
+        <div className="empty-state">Loading your recipes...</div>
       ) : filteredRecipes.length === 0 ? (
-        <div className="text-center text-gray-500 py-12">
+        <div className="empty-state">
           {recipes.length === 0 
             ? "No recipes yet. Add your first recipe by pasting a URL above!"
             : "No recipes match your filters."}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="recipe-grid">
           {filteredRecipes.map(recipe => (
-            <div
-              key={recipe.id}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow cursor-pointer group"
-            >
+            <div key={recipe.id} className="recipe-card">
               <div onClick={() => handleOpenRecipe(recipe.url)}>
                 {recipe.imageUrl ? (
-                  <div className="h-48 overflow-hidden bg-gray-100">
+                  <div className="recipe-image">
                     <img
                       src={recipe.imageUrl}
                       alt={recipe.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-gray-400"><svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
+                        e.target.parentElement.innerHTML = '<div class="recipe-image-placeholder"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
                       }}
                     />
                   </div>
                 ) : (
-                  <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
-                    <svg className="w-16 h-16 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="recipe-image-placeholder">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                   </div>
                 )}
                 
-                <div className="p-5">
-                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors">
-                    {recipe.name}
-                  </h3>
+                <div className="recipe-content">
+                  <h3 className="recipe-title">{recipe.name}</h3>
                   {recipe.description && (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{recipe.description}</p>
+                    <p className="recipe-description">{recipe.description}</p>
                   )}
                   
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">
-                      ⏱️ {recipe.cookTime}
-                    </span>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                      🍽️ {recipe.dishType}
-                    </span>
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                      🌍 {recipe.foodType}
-                    </span>
+                  <div className="recipe-tags">
+                    <span className="tag tag-time">⏱️ {recipe.cookTime}</span>
+                    <span className="tag tag-dish">🍽️ {recipe.dishType}</span>
+                    <span className="tag tag-cuisine">🌍 {recipe.foodType}</span>
                   </div>
                 </div>
               </div>
               
-              <div className="px-5 pb-4 flex justify-between items-center">
-                <button
-                  onClick={() => handleOpenRecipe(recipe.url)}
-                  className="text-orange-600 hover:text-orange-700 font-medium text-sm flex items-center gap-1"
+              <div className="recipe-actions">
+                <a
+                  href={recipe.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="view-link"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   View Recipe
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
                   </svg>
-                </button>
+                </a>
                 <button
-                  onClick={() => handleDeleteRecipe(recipe.id)}
-                  className="text-red-500 hover:text-red-700 text-sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteRecipe(recipe.id);
+                  }}
+                  className="delete-btn"
                   title="Delete recipe"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                   </svg>
                 </button>
@@ -314,7 +298,7 @@ Please respond ONLY with valid JSON, no markdown backticks or preamble.`
         </div>
       )}
 
-      <div className="mt-8 text-center text-sm text-gray-500">
+      <div className="footer-stats">
         {recipes.length > 0 && (
           <p>
             Showing {filteredRecipes.length} of {recipes.length} recipe{recipes.length !== 1 ? 's' : ''}
