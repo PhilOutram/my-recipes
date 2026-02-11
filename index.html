@@ -9,6 +9,14 @@
 <body>
   <div id="root"></div>
   
-  <script type="module" src="app.js"></script>
+  <!-- Load React from CDN (UMD version) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Load Babel standalone to compile JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Load our app with JSX -->
+  <script type="text/babel" src="app.js"></script>
 </body>
 </html>
