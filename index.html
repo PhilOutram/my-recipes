@@ -1,22 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recipe Bookmarks</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RecipeBox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="root"></div>
-  
-  <!-- Load React from CDN (UMD version) -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <!-- Load Babel standalone to compile JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- Load our app with JSX -->
-  <script type="text/babel" src="app.js"></script>
+
+  <!-- ═══════════════════ HEADER ═══════════════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo" id="logoBtn">🍽 RecipeBox</div>
+      <nav class="header-nav">
+        <button class="nav-btn active" id="navBrowse">My Recipes</button>
+        <button class="nav-btn" id="navAdd">+ Add Recipe</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ═══════════════════ BROWSE VIEW ═══════════════════ -->
+  <section id="browseView" class="view active">
+    <div class="browse-hero">
+      <h1>What are we <em>cooking</em> today?</h1>
+      <p class="hero-sub">Swipe through your collection and build your shopping list in seconds.</p>
+    </div>
+
+    <div class="search-bar-wrap">
+      <input type="text" id="searchInput" class="search-input" placeholder="Search recipes…" />
+    </div>
+
+    <div class="recipe-grid" id="recipeGrid">
+      <!-- Cards injected by JS -->
+    </div>
+
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">📖</div>
+      <h2>No recipes yet</h2>
+      <p>Click <strong>+ Add Recipe</strong> to create your first one.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ ADD / EDIT FORM ═══════════════════ -->
+  <section id="addView" class="view">
+    <div class="form-container">
+      <div class="form-header">
+        <h2 id="formTitle">Add a New Recipe</h2>
+        <button class="btn-ghost" id="cancelFormBtn">✕ Cancel</button>
+      </div>
+
+      <div id="formAlert" class="form-alert hidden"></div>
+
+      <!-- Photo upload -->
+      <div class="photo-upload-area" id="photoUploadArea">
+        <input type="file" id="photoInput" accept="image/*" hidden />
+        <div class="photo-placeholder" id="photoPlaceholder">
+          <span class="upload-icon">📷</span>
+          <span>Click to add a photo</span>
+        </div>
+        <img id="photoPreview" class="photo-preview hidden" alt="Recipe photo" />
+        <button class="photo-remove hidden" id="photoRemoveBtn">✕</button>
+      </div>
+
+      <!-- Basic info -->
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Recipe Name <span class="req">*</span></label>
+          <input type="text" id="recipeName" placeholder="e.g. Spaghetti Carbonara" />
+        </div>
+      </div>
+
+      <div class="form-row three-col">
+        <div class="form-group">
+          <label>Serves <span class="req">*</span></label>
+          <input type="number" id="recipeServes" min="1" max="100" placeholder="4" />
+        </div>
+        <div class="form-group">
+          <label>Prep Time</label>
+          <input type="text" id="recipePrep" placeholder="15 mins" />
+        </div>
+        <div class="form-group">
+          <label>Cook Time</label>
+          <input type="text" id="recipeCook" placeholder="30 mins" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Cuisine / Category</label>
+          <input type="text" id="recipeCuisine" placeholder="e.g. Italian, Vegetarian, Quick Dinner…" />
+        </div>
+      </div>
+
+      <!-- Ingredients -->
+      <div class="form-section-title">
+        <span>🥦 Ingredients</span>
+        <button class="btn-add-row" id="addIngredientBtn">+ Add</button>
+      </div>
+      <div id="ingredientsList" class="dynamic-list">
+        <!-- rows injected by JS -->
+      </div>
+
+      <!-- Method -->
+      <div class="form-section-title">
+        <span>👨‍🍳 Method</span>
+        <button class="btn-add-row" id="addStepBtn">+ Add Step</button>
+      </div>
+      <div id="stepsList" class="dynamic-list">
+        <!-- rows injected by JS -->
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" id="saveRecipeBtn">💾 Save Recipe</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ RECIPE DETAIL (swipe view) ═══════════════════ -->
+  <section id="detailView" class="view">
+    <div class="detail-header">
+      <button class="btn-back" id="backBtn">← Back</button>
+      <div class="detail-actions">
+        <button class="btn-ghost-sm" id="editRecipeBtn">✏️ Edit</button>
+        <button class="btn-ghost-sm danger" id="deleteRecipeBtn">🗑 Delete</button>
+      </div>
+    </div>
+
+    <!-- Hero image -->
+    <div class="detail-hero" id="detailHero">
+      <img id="detailHeroImg" src="" alt="" />
+      <div class="detail-hero-overlay">
+        <h1 id="detailName"></h1>
+        <div class="detail-meta" id="detailMeta"></div>
+      </div>
+    </div>
+
+    <!-- Swipe tab indicator -->
+    <div class="swipe-tabs">
+      <button class="swipe-tab active" data-panel="ingredients">Ingredients</button>
+      <button class="swipe-tab" data-panel="method">Method</button>
+    </div>
+
+    <!-- Swipeable panels -->
+    <div class="swipe-container" id="swipeContainer">
+
+      <!-- Panel 1: Ingredients -->
+      <div class="swipe-panel" id="panelIngredients">
+        <div class="panel-inner">
+          <div class="serves-adjuster">
+            <label>Adjust servings:</label>
+            <div class="serves-control">
+              <button class="serves-btn" id="servesDown">−</button>
+              <span id="servesCount">4</span>
+              <button class="serves-btn" id="servesUp">+</button>
+            </div>
+          </div>
+          <ul class="ingredients-list" id="detailIngredients"></ul>
+
+          <button class="tesco-btn" id="tescoBtn">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b0/NewTesco.svg/200px-NewTesco.svg.png" alt="Tesco" class="tesco-logo" />
+            <span>Add to Tesco Basket</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Panel 2: Method -->
+      <div class="swipe-panel" id="panelMethod">
+        <div class="panel-inner">
+          <ol class="method-list" id="detailMethod"></ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Swipe hint -->
+    <div class="swipe-hint" id="swipeHint">← swipe to see method →</div>
+  </section>
+
+  <!-- ═══════════════════ TESCO MODAL ═══════════════════ -->
+  <div class="modal-backdrop hidden" id="tescoModal">
+    <div class="modal">
+      <div class="modal-header">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b0/NewTesco.svg/200px-NewTesco.svg.png" alt="Tesco" class="tesco-logo-lg" />
+        <h2>Tesco Shopping List</h2>
+        <button class="modal-close" id="tescoModalClose">✕</button>
+      </div>
+      <p class="modal-sub">Select the items you need, then click <strong>Add to Basket</strong>.</p>
+
+      <div class="tesco-item-list" id="tescoItemList"></div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" id="tescoSelectAll">Select All</button>
+        <button class="btn-tesco" id="tescoAddBasket">🛒 Add Selected to Tesco Basket</button>
+      </div>
+
+      <p class="tesco-disclaimer">
+        ℹ️ This will open <strong>tesco.com/groceries/en-GB/search</strong> for each ingredient in a new tab using Tesco's search feature. Tesco's direct basket-add API is not publicly available — this gets you there in one click per item.
+      </p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
