@@ -119,64 +119,78 @@
     </div>
   </section>
 
-  <!-- ═══════════════════ RECIPE DETAIL (swipe view) ═══════════════════ -->
+  <!-- ═══════════════════ RECIPE DETAIL (3-panel swipe) ═══════════════════ -->
   <section id="detailView" class="view">
-    <div class="detail-header">
-      <button class="btn-back" id="backBtn">← Back</button>
-      <div class="detail-actions">
-        <button class="btn-ghost-sm" id="editRecipeBtn">✏️ Edit</button>
-        <button class="btn-ghost-sm danger" id="deleteRecipeBtn">🗑 Delete</button>
+
+    <!-- Compact sticky bar: back | title | actions -->
+    <div class="detail-topbar" id="detailTopbar">
+      <button class="btn-back" id="backBtn">‹</button>
+      <div class="detail-topbar-title" id="detailTopbarTitle"></div>
+      <div class="detail-topbar-actions">
+        <button class="btn-icon" id="editRecipeBtn" title="Edit">✏️</button>
+        <button class="btn-icon danger" id="deleteRecipeBtn" title="Delete">🗑</button>
       </div>
     </div>
 
-    <!-- Hero image -->
-    <div class="detail-hero" id="detailHero">
-      <img id="detailHeroImg" src="" alt="" />
-      <div class="detail-hero-overlay">
-        <h1 id="detailName"></h1>
-        <div class="detail-meta" id="detailMeta"></div>
-      </div>
+    <!-- 3-tab strip -->
+    <div class="swipe-tabs" id="swipeTabs">
+      <button class="swipe-tab active" data-panel="0">Details</button>
+      <button class="swipe-tab" data-panel="1">Ingredients</button>
+      <button class="swipe-tab" data-panel="2">Method</button>
     </div>
 
-    <!-- Swipe tab indicator -->
-    <div class="swipe-tabs">
-      <button class="swipe-tab active" data-panel="ingredients">Ingredients</button>
-      <button class="swipe-tab" data-panel="method">Method</button>
-    </div>
+    <!-- Swipeable track -->
+    <div class="swipe-track-wrap">
+      <div class="swipe-track" id="swipeTrack">
 
-    <!-- Swipeable panels -->
-    <div class="swipe-container" id="swipeContainer">
-
-      <!-- Panel 1: Ingredients -->
-      <div class="swipe-panel" id="panelIngredients">
-        <div class="panel-inner">
-          <div class="serves-adjuster">
-            <label>Adjust servings:</label>
-            <div class="serves-control">
-              <button class="serves-btn" id="servesDown">−</button>
-              <span id="servesCount">4</span>
-              <button class="serves-btn" id="servesUp">+</button>
+        <!-- Panel 0: Details -->
+        <div class="swipe-panel">
+          <div class="panel-inner">
+            <div class="detail-photo-wrap" id="detailPhotoWrap">
+              <img id="detailHeroImg" src="" alt="" />
+              <div class="detail-photo-placeholder" id="detailPhotoPlaceholder">🍽</div>
             </div>
+            <h2 class="detail-recipe-name" id="detailName"></h2>
+            <div class="detail-info-grid" id="detailMeta"></div>
           </div>
-          <ul class="ingredients-list" id="detailIngredients"></ul>
-
-          <button class="tesco-btn" id="tescoBtn">
-            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b0/NewTesco.svg/200px-NewTesco.svg.png" alt="Tesco" class="tesco-logo" />
-            <span>Add to Tesco Basket</span>
-          </button>
         </div>
-      </div>
 
-      <!-- Panel 2: Method -->
-      <div class="swipe-panel" id="panelMethod">
-        <div class="panel-inner">
-          <ol class="method-list" id="detailMethod"></ol>
+        <!-- Panel 1: Ingredients -->
+        <div class="swipe-panel">
+          <div class="panel-inner">
+            <div class="serves-adjuster">
+              <span class="serves-label">Servings</span>
+              <div class="serves-control">
+                <button class="serves-btn" id="servesDown">−</button>
+                <span id="servesCount">4</span>
+                <button class="serves-btn" id="servesUp">+</button>
+              </div>
+            </div>
+            <ul class="ingredients-list" id="detailIngredients"></ul>
+            <button class="tesco-btn" id="tescoBtn">
+              <img src="https://upload.wikimedia.org/wikipedia/en/thumb/b/b0/NewTesco.svg/200px-NewTesco.svg.png" alt="Tesco" class="tesco-logo" />
+              <span>Add to Tesco Basket</span>
+            </button>
+          </div>
         </div>
-      </div>
+
+        <!-- Panel 2: Method -->
+        <div class="swipe-panel">
+          <div class="panel-inner">
+            <ol class="method-list" id="detailMethod"></ol>
+          </div>
+        </div>
+
+      </div><!-- /swipe-track -->
+    </div><!-- /swipe-track-wrap -->
+
+    <!-- Dot indicator -->
+    <div class="swipe-dots">
+      <span class="dot active"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
     </div>
 
-    <!-- Swipe hint -->
-    <div class="swipe-hint" id="swipeHint">← swipe to see method →</div>
   </section>
 
   <!-- ═══════════════════ TESCO MODAL ═══════════════════ -->

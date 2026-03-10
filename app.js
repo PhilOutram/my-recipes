@@ -35,16 +35,16 @@ const ingredientsList = id('ingredientsList');
 const stepsList    = id('stepsList');
 
 // Detail
-const detailHero   = id('detailHero');
-const detailHeroImg = id('detailHeroImg');
-const detailName   = id('detailName');
-const detailMeta   = id('detailMeta');
+const detailTopbarTitle = id('detailTopbarTitle');
+const detailHeroImg     = id('detailHeroImg');
+const detailPhotoPH     = id('detailPhotoPlaceholder');
+const detailName        = id('detailName');
+const detailMeta        = id('detailMeta');
 const detailIngredients = id('detailIngredients');
-const detailMethod = id('detailMethod');
-const servesCount  = id('servesCount');
-const swipeContainer = id('swipeContainer');
-const swipeTabs    = document.querySelectorAll('.swipe-tab');
-const swipeHint    = id('swipeHint');
+const detailMethod      = id('detailMethod');
+const servesCount       = id('servesCount');
+const swipeTrack        = id('swipeTrack');
+const swipeDots         = document.querySelectorAll('.dot');
 
 // Tesco
 const tescoModal   = id('tescoModal');
@@ -346,29 +346,39 @@ function openDetail(recipeId) {
   baseServings    = r.serves;
   currentServings = r.serves;
 
-  // Hero
+  // Top bar title
+  detailTopbarTitle.textContent = r.name;
+
+  // Photo
   if (r.photo) {
-    detailHero.classList.remove('no-photo');
     detailHeroImg.src = r.photo;
-    detailHeroImg.style.display = 'block';
+    detailHeroImg.classList.remove('hidden');
+    detailPhotoPH.classList.add('hidden');
   } else {
-    detailHero.classList.add('no-photo');
-    detailHeroImg.style.display = 'none';
+    detailHeroImg.src = '';
+    detailHeroImg.classList.add('hidden');
+    detailPhotoPH.classList.remove('hidden');
   }
 
+  // Recipe name on details panel
   detailName.textContent = r.name;
 
-  const metaParts = [
-    `👥 Serves ${r.serves}`,
-    r.prep ? `⏲ Prep: ${r.prep}` : null,
-    r.cook ? `🔥 Cook: ${r.cook}` : null,
-    r.cuisine ? `🌍 ${r.cuisine}` : null,
-  ].filter(Boolean);
+  // Info grid cards
+  const infoItems = [
+    { label: '👥 Serves',    value: String(r.serves) },
+    { label: '🌍 Cuisine',   value: r.cuisine || '—' },
+    { label: '⏲ Prep',      value: r.prep    || '—' },
+    { label: '🔥 Cook',      value: r.cook    || '—' },
+  ];
+  detailMeta.innerHTML = infoItems.map(i => `
+    <div class="detail-info-card">
+      <div class="info-label">${esc(i.label)}</div>
+      <div class="info-value">${esc(i.value)}</div>
+    </div>
+  `).join('');
 
-  detailMeta.innerHTML = metaParts.map(p => `<span>${esc(p)}</span>`).join('');
-
-  // Reset swipe to ingredients tab
-  setPanel('ingredients');
+  // Reset to first panel
+  setPanel(0);
   servesCount.textContent = currentServings;
 
   renderIngredients(r);
@@ -378,6 +388,7 @@ function openDetail(recipeId) {
   id('deleteRecipeBtn').onclick = () => confirmDelete(r.id);
 
   showView('detail');
+  acquireWakeLock();
 }
 
 function renderIngredients(r) {
@@ -413,37 +424,40 @@ function adjustServings(delta) {
 
 function scaleQty(qty, ratio) {
   if (!qty) return '';
-  // Try to parse number from string like "200" or "1.5"
   const num = parseFloat(qty);
   if (isNaN(num)) return qty;
-  const scaled = num * ratio;
-  // Nice rounding
+  const scaled  = num * ratio;
   const rounded = Math.round(scaled * 4) / 4;
   return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(2).replace(/\.?0+$/, '');
 }
 
-/* Swipe logic */
-swipeTabs.forEach(tab => {
-  tab.addEventListener('click', () => setPanel(tab.dataset.panel));
+/* ── 3-panel swipe ── */
+let currentPanel = 0;
+
+document.querySelectorAll('.swipe-tab').forEach(tab => {
+  tab.addEventListener('click', () => setPanel(parseInt(tab.dataset.panel)));
 });
 
-function setPanel(panel) {
-  swipeTabs.forEach(t => t.classList.toggle('active', t.dataset.panel === panel));
-  swipeContainer.classList.toggle('show-method', panel === 'method');
-  swipeHint.textContent = panel === 'ingredients'
-    ? '← swipe to see method →'
-    : '← swipe back to ingredients';
+function setPanel(idx) {
+  currentPanel = idx;
+  swipeTrack.dataset.panel = idx;
+
+  document.querySelectorAll('.swipe-tab').forEach((t, i) =>
+    t.classList.toggle('active', i === idx));
+  swipeDots.forEach((d, i) =>
+    d.classList.toggle('active', i === idx));
 }
 
-// Touch swipe support
+// Touch swipe
 let touchStartX = 0;
-swipeContainer.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-swipeContainer.addEventListener('touchend',   e => {
+id('swipeTrack').addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+id('swipeTrack').addEventListener('touchend', e => {
   const diff = touchStartX - e.changedTouches[0].clientX;
-  if (Math.abs(diff) < 50) return;
-  const current = swipeContainer.classList.contains('show-method') ? 'method' : 'ingredients';
-  if (diff > 0 && current === 'ingredients') setPanel('method');
-  if (diff < 0 && current === 'method')      setPanel('ingredients');
+  if (Math.abs(diff) < 45) return;
+  if (diff > 0 && currentPanel < 2) setPanel(currentPanel + 1);
+  if (diff < 0 && currentPanel > 0) setPanel(currentPanel - 1);
 });
 
 /* Delete */
@@ -452,8 +466,37 @@ function confirmDelete(recipeId) {
   recipes = recipes.filter(r => r.id !== recipeId);
   saveRecipes();
   renderGrid(searchInput.value);
+  releaseWakeLock();
   showView('browse');
 }
+
+/* ═══════════════════════════════════════
+   SCREEN WAKE LOCK
+═══════════════════════════════════════ */
+let wakeLock = null;
+
+async function acquireWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    // Re-acquire if released (e.g. tab switch)
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch (e) { /* not critical */ }
+}
+
+async function releaseWakeLock() {
+  if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+}
+
+// Re-acquire when page becomes visible again while in detail view
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && id('detailView').classList.contains('active')) {
+    acquireWakeLock();
+  }
+});
+
+// Release wake lock when going back to browse
+id('backBtn').addEventListener('click', () => releaseWakeLock());
 
 /* ═══════════════════════════════════════
    TESCO INTEGRATION
